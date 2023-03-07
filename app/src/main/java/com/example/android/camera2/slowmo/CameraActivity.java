@@ -33,9 +33,13 @@ public class CameraActivity extends AppCompatActivity {
         getWindow().setNavigationBarContrastEnforced(false);
 
         /* get camera permission */
-        ActivityResultLauncher<String> launcher = registerForActivityResult(new ActivityResultContracts.RequestPermission(),
+        ActivityResultLauncher<String[]> launcher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
                 (isGranted) -> {
-                    if (isGranted) {
+                    if(isGranted.containsValue(Boolean.FALSE)) {
+                        /* 権限取得 拒否時 -> ErrorダイアグOpenでアプリ終了!! */
+                        ErrorDialog.newInstance(getString(R.string.request_permission)).show(getSupportFragmentManager(), "Error!!");
+                    }
+                    else {
                         /* 権限取得 OK時 -> Fragment追加 */
                         if (null == savedInstanceState) {
                             getSupportFragmentManager().beginTransaction()
@@ -43,14 +47,10 @@ public class CameraActivity extends AppCompatActivity {
                                     .commit();
                         }
                     }
-                    else {
-                        /* 権限取得 拒否時 -> ErrorダイアグOpenでアプリ終了!! */
-                        ErrorDialog.newInstance(getString(R.string.request_permission)).show(getSupportFragmentManager(), "Error!!");
-                    }
                 });
 
         /* request camera permission */
-        launcher.launch(android.Manifest.permission.CAMERA);
+        launcher.launch(new String[]{android.Manifest.permission.CAMERA, android.Manifest.permission.RECORD_AUDIO});
 
     }
 
@@ -87,4 +87,6 @@ public class CameraActivity extends AppCompatActivity {
         }
     }
 
+    public static final long ANIMATION_FAST_MILLIS = 50L;
+    public static final long ANIMATION_SLOW_MILLIS = 100L;
 }

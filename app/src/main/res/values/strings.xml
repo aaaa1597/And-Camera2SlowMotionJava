@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Camera2SlowMotionJava</string>
     <string name="request_permission">This app needs camera permission.\n\nQuit this app.</string>
+    <string name="capture">Capture</string>
 </resources>

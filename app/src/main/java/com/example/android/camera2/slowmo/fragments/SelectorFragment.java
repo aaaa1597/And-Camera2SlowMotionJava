@@ -18,18 +18,22 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.android.camera2.slowmo.CameraViewModel;
 import com.example.android.camera2.slowmo.R;
 import com.google.common.primitives.Ints;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
 public class SelectorFragment extends Fragment {
+    private CameraViewModel mViewModel;
     List<CameraInfo> cameraList;
 
     public static Fragment newInstance() {
@@ -45,6 +49,8 @@ public class SelectorFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        mViewModel = new ViewModelProvider(requireActivity()).get(CameraViewModel.class);
 
         RecyclerView v = (RecyclerView)view.findViewById(R.id.rvw_selector);
         v.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -72,6 +78,9 @@ public class SelectorFragment extends Fragment {
                     try {
                         CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(id);
                         int[] capabilities = characteristics.get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES);
+                        Arrays.stream(capabilities).sorted().forEach(capability -> {
+                            Log.d("aaaaa", String.format("aaaaa cameraid=%s capability=%d", id, capability));
+                        });
                         boolean is = Ints.asList(capabilities).contains(CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_CONSTRAINED_HIGH_SPEED_VIDEO);
                         return is;
                     }
@@ -155,11 +164,15 @@ public class SelectorFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            CameraInfo item = cameraList.get(position);
+            final CameraInfo item = cameraList.get(position);
             holder.mTxtItem.setText(item.title);
             holder.mTxtItem.setOnClickListener(v1 -> {
+                mViewModel.setCameraId(item.cameraId);
+                mViewModel.setWidth(item.size.getWidth());
+                mViewModel.setHeight(item.size.getHeight());
+                mViewModel.setFps(item.fps);
                 getActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, CameraFragment.newInstance(item.cameraId, item.size.getWidth(), item.size.getHeight(), item.fps)).commit();
+                        .replace(R.id.fragment_container, CameraFragment.newInstance()).commit();
             });
         }
 
